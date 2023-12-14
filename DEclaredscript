@@ -1,0 +1,45 @@
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('Deploy')
+        {
+            steps
+            {
+                git'https://github.com/ajayhp07/maven.git'
+            }
+        }
+        stage('Build')
+        {
+            steps
+            {
+                sh'mvn package'
+            }
+        }
+        stage('Deployyyyyyyyy')
+        {
+            steps
+            {
+                sh'scp /var/lib/jenkins/workspace/Developer/webapp/target/webapp.war ubuntu@172.31.45.37:/var/lib/tomcat9/webapps/test.war'
+            }
+        }
+        stage('Test')
+        {
+            steps
+            {
+                git'https://github.com/ajayhp07/Test.git'
+                sh 'java -jar /var/lib/jenkins/workspace/Developer/testing.jar'
+                
+            }
+        }
+        stage('Delivery')
+        {
+            steps
+            {
+                sh'scp /var/lib/jenkins/workspace/Developer/webapp/target/webapp.war ubuntu@172.31.41.192:/var/lib/tomcat9/webapps/prod.war'
+            }
+        }
+      
+    }
+}
