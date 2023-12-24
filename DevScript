@@ -1,0 +1,25 @@
+node('built-in')
+{
+    stage('Download')
+    {
+        git'https://github.com/ajayhp07/maven.git'
+    }
+    stage('Build')
+    {
+        sh'mvn package'
+    }
+    stage('DEploy')
+    {
+        sh'scp /var/lib/jenkins/workspace/Devscript/webapp/target/webapp.war ubuntu@172.31.8.90:/var/lib/tomcat9/webapps/app.war'
+    }
+    stage('Test')
+    {
+        git'https://github.com/ajayhp07/Test.git'
+        sh'java -jar /var/lib/jenkins/workspace/Devscript/testing.jar'
+    }
+    stage('Delivery')
+    {
+        sh'scp /var/lib/jenkins/workspace/Devscript/webapp/target/webapp.war ubuntu@172.31.1.32:/var/lib/tomcat9/webapps/test.war'    
+    }
+}
+
