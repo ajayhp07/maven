@@ -1,46 +1,65 @@
-pipeline
+node("built-in")
 {
-    agent any
-    stages
+    stage('continous download')
     {
-        stage('countDownload')
+        try
         {
-            steps
-            {
-                git 'https://github.com/ajayhp07/maven.git'    
-            }
+            git'https://github.com/ajayhp07/maven.git'
         }
-        stage('Build')
+        catch(Exception e)
         {
-            steps
-            {
-                sh 'mvn package'
-            }
-        }
-        stage('Deploy')
-        {
-            steps
-            {
-                deploy adapters: [tomcat9(credentialsId: '7a0b1393-a9d8-46da-8b16-eea496c56a48', path: '', url: 'http://172.31.45.37:8080')], contextPath: 'app', war: '**/*.war'
-            }
-        }
-        stage('Testing')
-        {
-            steps
-            {
-                git 'https://github.com/ajayhp07/Test.git'
-                sh 'java -jar /var/lib/jenkins/workspace/Development/testing.jar'
-                
-            }
-        }
-        stage('Delivery')
-        {
-            steps
-            {
-                deploy adapters: [tomcat9(credentialsId: '7a0b1393-a9d8-46da-8b16-eea496c56a48', path: '', url: 'http://172.31.41.192:8080')], contextPath: 'appp', war: '**/*.war'
-            }
-        }
+            mail bcc: '', body: 'download error', cc: '', from: '', replyTo: '', subject: 'download failed', to: 'ajjuhp783@gmail.com'
         
+            exit(1)
+        }
+    }
+    stage('continous build')
+    {
+        try
+        {
+            sh'mvn package'
+        }
+        catch(Exception e2)
+        {
+            mail bcc: '', body: 'build error', cc: '', from: '', replyTo: '', subject: 'build failed', to: 'ajjuhp783@gmail.com'
         
+            exit(1)
+        }
+    }
+    stage('continous deploy')
+    {
+        try
+        {
+            sh'scp /var/lib/jenkins/workspace/scripted/webapp/target/webapp.war ubuntu@172.31.16.43:/var/lib/tomcat9/webapps/qa.war'
+        }
+    
+        catch(Exception e3)
+        {
+            mail bcc: '', body: 'deploy error', cc: '', from: '', replyTo: '', subject: 'deploy failed', to: 'ajjuhp783@gmail.com'
+        }
+    }
+    stage('continous test')
+    {
+        try
+        {
+            git'https://github.com/ajayhp07/Test.git'
+            
+            sh'java -jar /var/lib/jenkins/workspace/scripted/testing.jar '
+        }
+        catch(Exception e4)
+        {
+            mail bcc: '', body: 'test error', cc: '', from: '', replyTo: '', subject: 'test failed', to: 'ajjuhp783@gmail.com'
+        }
+    }
+    stage('continous prod')
+    {
+        try
+        {
+            sh'scp /var/lib/jenkins/workspace/scripted/webapp/target/webapp.war ubuntu@172.31.29.33:/var/lib/tomcat9/webapps/aaa.war'        
+        }
+        catch(Exception e5)
+        {
+            mail bcc: '', body: 'prod error', cc: '', from: '', replyTo: '', subject: 'prod failed', to: 'ajjuhp783@gmail.com'
+        }
     }
 }
